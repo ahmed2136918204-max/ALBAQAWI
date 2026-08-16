@@ -1116,14 +1116,14 @@
                         <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400"><i class="fa-solid fa-envelope"></i></span>
-                            <input type="email" id="loginEmail" required value="ahmed_m_s@msn.com" placeholder="ahmed_m_s@msn.com" class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg p-2.5 pr-9 outline-none focus:ring-2 focus:ring-safwa-gold text-sm dark:text-white" dir="ltr">
+                            <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@example.com" class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg p-2.5 pr-9 outline-none focus:ring-2 focus:ring-safwa-gold text-sm dark:text-white" dir="ltr">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">كلمة المرور</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" id="loginPass" required value="A111222333" placeholder="A111222333" class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg p-2.5 pr-9 outline-none focus:ring-2 focus:ring-safwa-gold text-sm dark:text-white" dir="ltr">
+                            <input type="password" id="loginPass" required autocomplete="current-password" placeholder="أدخل كلمة المرور" class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg p-2.5 pr-9 outline-none focus:ring-2 focus:ring-safwa-gold text-sm dark:text-white" dir="ltr">
                         </div>
                     </div>
                     <button type="submit" id="loginBtn" class="w-full bg-[#1b263b] hover:bg-[#0d1b2a] text-white font-bold py-3 rounded-lg shadow transition flex items-center justify-center gap-2 border border-safwa-gold/50">
@@ -2633,21 +2633,7 @@
             if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> التحقق...';
             try {
                 const normalizedEmail = email.toLowerCase();
-                const isAdminLogin = normalizedEmail === 'ahmed_m_s@msn.com' && pass === 'A111222333';
-
-                if (isAdminLogin) {
-                    try {
-                        await signInWithEmailAndPassword(auth, normalizedEmail, pass);
-                    } catch (err) {
-                        if (err && err.code === 'auth/user-not-found') {
-                            await createUserWithEmailAndPassword(auth, normalizedEmail, pass);
-                        } else {
-                            throw err;
-                        }
-                    }
-                } else {
-                    await signInWithEmailAndPassword(auth, normalizedEmail, pass);
-                }
+                await signInWithEmailAndPassword(auth, normalizedEmail, pass);
             } catch (err) {
                 const message = err && err.message ? err.message : 'خطأ: البريد أو كلمة المرور غير صحيحة';
                 showToast(`خطأ: ${message}`, 'error');
