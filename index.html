@@ -559,7 +559,7 @@
                             <div>
                                 <label class="block text-slate-300 font-bold mb-2 text-sm">الوقت *</label>
                                 <select id="bookTime" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none">                              
-                                    <option value="08:00 صباحاً">08:00 ص - 10:00 ص</option>
+                                    <option value="07:00 صباحاً">07:00 ص - 09:00 ص</option>
                                     <option value="10:00 صباحاً">10:00 ص - 12:00 م</option>
                                     <option value="01:00 مساءً">01:00 م - 03:00 م</option>
                                     <option value="03:00 مساءً">03:00 م - 05:00 م</option>
@@ -714,7 +714,7 @@
                             <span>ما هي أوقات العمل الرسمية في الشركة ؟</span><i class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
                         </button>
                         <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
-                            <div class="p-6 border-t border-slate-50 text-gray-600 dark:text-slate-300 dark:border-slate-700">أوقات العمل: من السبت إلى الخميس 8:00 ص - 5:00 م، يوم الجمعة إجازة رسمية مغلق.</div>
+                            <div class="p-6 border-t border-slate-50 text-gray-600 dark:text-slate-300 dark:border-slate-700">أوقات العمل: من السبت إلى الخميس 7:00 ص - 5:00 م، يوم الجمعة إجازة رسمية مغلق.</div>
                         </div>
                     </div>
                 </div>
@@ -784,19 +784,14 @@
                     <h2 class="text-3xl md:text-5xl font-black text-dark dark:text-white mb-4">شركات نفتخر بها</h2>
                     <p class="text-gray-600 dark:text-slate-300 text-lg">نفتخر باننا نعمل مع شركات متميزة ويثقون بنا.</p>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                    <div class="flex h-40 md:h-48 items-center justify-center p-3 transition hover:scale-105">
-                        <img src="aletihad.png" alt="شعار شركة الاتحاد" class="h-full w-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/600x300/eff6ff/1d4ed8?text=Partner+Logo'">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 md:gap-6">
+                    <div class="flex h-80 md:h-100 items-center justify-center p-3 transition hover:scale-105">
+                        <img src="ekal.jpg" alt="شعار شركة الاتحاد" class="h-full w-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/600x300/eff6ff/1d4ed8?text=Partner+Logo'">
                     </div>
-                    <div class="flex h-40 md:h-48 items-center justify-center p-3 transition hover:scale-105">
-                        <img src="aldera.png" alt="شعار شركة متعاقدة" class="h-full w-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/600x300/eff6ff/1d4ed8?text=Partner+Logo'">
+                    <div class="flex h-80 md:h-100 items-center justify-center p-3 transition hover:scale-105">
+                        <img src="ahmc.png" alt="شعار شركة متعاقدة" class="h-full w-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/600x300/eff6ff/1d4ed8?text=Partner+Logo'">
                     </div>
-                    <div class="flex h-40 md:h-48 items-center justify-center p-3 transition hover:scale-105">
-                        <img src="alrajhi-takaful.png" alt="شعار شركة متعاقدة" class="h-full w-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/600x300/eff6ff/1d4ed8?text=Partner+Logo'">
-                    </div>
-                    <div class="flex h-40 md:h-48 items-center justify-center p-3 transition hover:scale-105">
-                        <img src="najm.jpg" alt="شعار شركة متعاقدة" class="h-full w-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/600x300/eff6ff/1d4ed8?text=Partner+Logo'">
-                    </div>
+
                     
                 </div>
             </div>
@@ -959,7 +954,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-lg text-white mb-1 text-sm md:text-base">ساعات العمل</h4>
-                                    <p class="text-gray-400 text-xs">السبت - الخميس: <span id="branchHoursValue" class="text-white font-semibold">8:00 ص - 5:00 م</span></p>
+                                    <p class="text-gray-400 text-xs">السبت - الخميس: <span id="branchHoursValue" class="text-white font-semibold">7:00 ص - 5:00 م</span></p>
                                     <p class="text-gray-400 mt-1 text-xs">الجمعة: <span class="text-red-400 font-semibold">مغلق</span></p>
                                 </div>
                             </div>
@@ -1953,7 +1948,7 @@
                 phoneDisplay: "+966 56 454 3036",
                 phoneHref: "tel:+966564543036",
                 whatsappHref: "https://api.whatsapp.com/send?phone=966564543036",
-                hoursText: "8:00 ص - 5:00 م"
+                hoursText: "7:00 ص - 5:00 م"
             }
         };
 
@@ -2403,8 +2398,8 @@
         let currentUserRole = 'employee'; 
 
         const defaultTemplates = {
-            ready: `السلام عليكم ورحمة الله وبركاته 👋🌸\n\nأبشرك عميلنا [الاسم]، سيارتك [السيارة] (لوحة: [اللوحة]) جاهزة للاستلام من مركز البقعاوي.\n\n[الموعد]\n[السعر]\n\nيسعدنا تشريفك لنا خلال أوقات العمل الرسمية من 8 صباحاً إلى 5 مساءً. منورنا دايماً! 🚗✨`,
-            insurance: `السلام عليكم ورحمة الله وبركاته 👋✨\n\nأهلاً بك عميلنا، حابين نبشرك بصدور موافقة شركة التأمين للبدء في إصلاح سيارتك [السيارة] (لوحة: [اللوحة]).\n\n[الموعد]\n[السعر]\n\nبانتظار تشريفك لنا في مركز البقعاوي خلال أوقات العمل الرسمية من 8 صباحاً إلى 5 مساءً. يسعدنا خدمتكم دايماً! 🛠️🚗`,
+            ready: `السلام عليكم ورحمة الله وبركاته 👋🌸\n\nأبشرك عميلنا [الاسم]، سيارتك [السيارة] (لوحة: [اللوحة]) جاهزة للاستلام من مركز البقعاوي.\n\n[الموعد]\n[السعر]\n\nيسعدنا تشريفك لنا خلال أوقات العمل الرسمية من 7 صباحاً إلى 5 مساءً. منورنا دايماً! 🚗✨`,
+            insurance: `السلام عليكم ورحمة الله وبركاته 👋✨\n\nأهلاً بك عميلنا، حابين نبشرك بصدور موافقة شركة التأمين للبدء في إصلاح سيارتك [السيارة] (لوحة: [اللوحة]).\n\n[الموعد]\n[السعر]\n\nبانتظار تشريفك لنا في مركز البقعاوي خلال أوقات العمل الرسمية من 7 صباحاً إلى 5 مساءً. يسعدنا خدمتكم دايماً! 🛠️🚗`,
             docs: `السلام عليكم ورحمة الله وبركاته 👋🌸\n\nمن فضلك أرسل لنا الأوراق التالية لفتح كرت الإصلاح وبدء العمل على السيارة في مركز البقعاوي:\n\n[الأوراق]\n\nيعطيك العافية وشكراً لتعاونك معنا! 📄🤝`,
             survey: `السلام عليكم ورحمة الله وبركاته 👋✨\n\nيرجى تزويدنا بالمستندات التالية لإنهاء إجراءات معاينة السيارة في مركز البقعاوي بأسرع وقت:\n\n[الأوراق]\n\nشكراً لك لتجاوبك معنا! 🌹🙏`,
             review: `السلام عليكم ورحمة الله وبركاته عميلنا [الاسم] 👋🌸\n\nسعدنا جداً بخدمتك وصيانة سيارتك في *مركز البقعاوي لصيانة السيارات* 🚗✨\n\nيهمنا دائماً معرفة رأيك لتطوير خدماتنا بشكل مستمر 🌟، فضلاً وتكرماً لو تمنحنا نصف دقيقة من وقتك لتقييم تجربتك معنا من خلال الرابط التالي:\n[الرابط]\n\nنسعد بخدمتك دائماً، ونتمنى لك قيادة آمنة وسعيدة! 🌹🤝`
@@ -4932,7 +4927,7 @@
             const systemPrompt = `أنت المساعدة الذكية التفاعلية الرسمية لمركز "البقعاوي لصيانة السيارات والدراجات النارية" في المملكة العربية السعودية.
 لدينا فرع واحد فقط. موقع المركز على خرائط جوجل: https://maps.app.goo.gl/xAu9sAsGsR26kK6B7
 البريد الإلكتروني: baqawi.center@outlook.com
-أوقات العمل: من السبت إلى الخميس (8 صباحاً حتى 5 مساءً)، يوم الجمعة إجازة رسمية مغلق.
+أوقات العمل: من السبت إلى الخميس (7 صباحاً حتى 5 مساءً)، يوم الجمعة إجازة رسمية مغلق.
 رقم هاتف الاتصال والواتساب: +966564543036.
 
 قوانين الشخصية والردود:
