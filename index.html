@@ -85,7 +85,7 @@
         .hero-bg {
             position: relative;
             overflow: hidden;
-            background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.65)), url('https://images.unsplash.com/photo-1613214149922-f1809c99b414?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.65)), url('background.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -324,9 +324,7 @@
         <!-- ========================================================================= -->
         <!-- القسم الرئيسي (البانر) -->
         <section id="home" class="hero-bg min-h-[85vh] flex items-center relative">
-            <video class="hero-video" autoplay muted playsinline preload="auto" poster="https://images.unsplash.com/photo-1613214149922-f1809c99b414?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" onended="this.classList.add('hidden')" onerror="this.classList.add('hidden')">
-                <source src="Video.mp4" type="video/mp4">
-            </video>
+
             <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/60 hero-overlay"></div>
             <div class="container mx-auto px-4 text-center md:text-right relative hero-content">
                 <div class="max-w-3xl">
