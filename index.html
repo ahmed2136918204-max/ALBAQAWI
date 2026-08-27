@@ -1240,9 +1240,45 @@
                 <button onclick="window.switchAppTab('cars')" id="appTab-cars" class="flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-[#1b263b] dark:text-white shadow-md border-b-2 border-emerald-500">
                     <i class="fa-solid fa-car-on text-emerald-500"></i> إدارة السيارات
                 </button>
+                <button onclick="window.switchAppTab('bookings')" id="appTab-bookings" class="flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-white">
+                    <i class="fa-solid fa-calendar-check text-secondary"></i> حجوزات المواعيد
+                </button>
                 <button onclick="window.switchAppTab('employees')" id="appTab-employees" class="hidden flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-white">
                     <i class="fa-solid fa-users-gear text-sky-500"></i> صلاحيات الموظفين 👥
                 </button>
+            </div>
+
+            <!-- ========================== -->
+            <!-- وحدة حجوزات المواعيد -->
+            <!-- ========================== -->
+            <div id="bookingsModule" class="hidden">
+                <section class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-800 overflow-hidden text-right">
+                    <div class="p-4 sm:p-6 border-b border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div>
+                            <h2 class="text-lg font-bold"><i class="fa-solid fa-calendar-check text-secondary ml-1"></i> سجل حجوزات المواعيد</h2>
+                            <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">بيانات العملاء التي تم إرسالها من نموذج الحجز في الموقع.</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <span id="bookingsTotalBadge" class="bg-secondary/10 text-secondary text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap">إجمالي: 0</span>
+                            <button onclick="window.clearBookingRecords()" class="bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-xs font-bold px-3 py-2 rounded-lg transition whitespace-nowrap"><i class="fa-solid fa-trash-can ml-1"></i> مسح السجل</button>
+                        </div>
+                    </div>
+                    <div class="p-4 sm:p-6">
+                        <input id="bookingSearchInput" type="search" oninput="window.renderBookingRecords()" placeholder="البحث باسم العميل أو الجوال أو السيارة..." class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-secondary/30">
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-right text-xs min-w-[850px]">
+                                <thead class="bg-slate-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-bold">
+                                    <tr><th class="p-3">العميل</th><th class="p-3">الجوال</th><th class="p-3">السيارة</th><th class="p-3">الخدمة</th><th class="p-3">الموعد</th><th class="p-3">وقت التسجيل</th><th class="p-3 text-center">إجراءات</th></tr>
+                                </thead>
+                                <tbody id="bookingsTableBody" class="divide-y divide-gray-150 dark:divide-slate-800"></tbody>
+                            </table>
+                        </div>
+                        <div id="noBookingsMsg" class="text-center py-12 text-gray-400 dark:text-slate-500 text-xs flex flex-col items-center gap-2.5 hidden font-bold">
+                            <i class="fa-solid fa-calendar-xmark text-4xl text-gray-300 dark:text-slate-700"></i>
+                            لا توجد حجوزات مسجلة حتى الآن.
+                        </div>
+                    </div>
+                </section>
             </div>
 
             <!-- ========================== -->
@@ -2109,17 +2145,59 @@
             window.loadPublicVehicleData?.().catch(() => {});
         });
 
-        window.handleBookingSubmit = (e) => {
+        window.handleBookingSubmit = async (e) => {
             e.preventDefault();
-            const name = document.getElementById('bookName').value;
-            const phone = document.getElementById('bookPhone').value;
-            const car = document.getElementById('bookCar').value;
+            const name = document.getElementById('bookName').value.trim();
+            const phone = document.getElementById('bookPhone').value.trim();
+            const car = document.getElementById('bookCar').value.trim();
             const service = document.getElementById('bookService').value;
             const date = document.getElementById('bookDate').value;
             const time = document.getElementById('bookTime').value;
 
+            const booking = { id: 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), name, phone, car, service, date, time, createdAt: new Date().toISOString() };
+            const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
+            bookings.unshift(booking);
+            localStorage.setItem('safwa_booking_records', JSON.stringify(bookings));
+            if (typeof window.saveBookingToFirebase === 'function') await window.saveBookingToFirebase(booking);
+
             const message = `*طلب حجز موعد صيانة جديد - مركز البقعاوي*\n\n👤 *العميل:* ${name}\n📞 *الجوال:* ${phone}\n🚗 *السيارة:* ${car}\n🛠 *الخدمة:* ${service}\n📅 *التاريخ:* ${date}\n⏰ *الوقت:* ${time}`;
             window.open(`https://api.whatsapp.com/send?phone=966564543036&text=${encodeURIComponent(message)}`, '_blank');
+            e.target.reset();
+            if (typeof window.renderBookingRecords === 'function') window.renderBookingRecords();
+        };
+
+        const escapeBookingHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[character]));
+
+        window.renderBookingRecords = () => {
+            const tableBody = document.getElementById('bookingsTableBody');
+            const emptyMessage = document.getElementById('noBookingsMsg');
+            const totalBadge = document.getElementById('bookingsTotalBadge');
+            if (!tableBody) return;
+            const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
+            const query = (document.getElementById('bookingSearchInput')?.value || '').trim().toLowerCase();
+            const filteredBookings = bookings.filter((booking) => [booking.name, booking.phone, booking.car, booking.services, booking.date, booking.time].some((value) => String(value || '').toLowerCase().includes(query)));
+            if (totalBadge) totalBadge.textContent = `إجمالي: ${bookings.length}`;
+            tableBody.innerHTML = filteredBookings.map((booking) => {
+                const createdAt = booking.createdAt ? new Date(booking.createdAt).toLocaleString('ar-SA') : 'غير محدد';
+                const whatsappMessage = `*متابعة حجز موعد - مركز البقعاوي*\n\n👤 *العميل:* ${booking.name}\n🚗 *السيارة:* ${booking.car}\n🛠 *الخدمة:* ${booking.services}\n📅 *التاريخ:* ${booking.date}\n⏰ *الوقت:* ${booking.time}`;
+                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60"><td class="p-3 font-bold">${escapeBookingHtml(booking.name)}</td><td class="p-3 font-mono" dir="ltr">${escapeBookingHtml(booking.phone)}</td><td class="p-3">${escapeBookingHtml(booking.car)}</td><td class="p-3">${escapeBookingHtml(booking.services)}</td><td class="p-3 whitespace-nowrap">${escapeBookingHtml(booking.date)}<br><span class="text-gray-500">${escapeBookingHtml(booking.time)}</span></td><td class="p-3 text-gray-500 whitespace-nowrap">${escapeBookingHtml(createdAt)}</td><td class="p-3"><div class="flex justify-center gap-2"><a href="https://api.whatsapp.com/send?phone=${encodeURIComponent(booking.phone.replace(/\D/g, ''))}&text=${encodeURIComponent(whatsappMessage)}" target="_blank" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2.5 py-1.5 rounded-lg font-bold" title="فتح واتساب"><i class="fab fa-whatsapp"></i></a><button onclick="window.deleteBookingRecord('${booking.id}')" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1.5 rounded-lg" title="حذف الحجز"><i class="fa-solid fa-trash-can"></i></button></div></td></tr>`;
+            }).join('');
+            emptyMessage?.classList.toggle('hidden', filteredBookings.length > 0);
+        };
+
+        window.deleteBookingRecord = async (bookingId) => {
+            const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
+            localStorage.setItem('safwa_booking_records', JSON.stringify(bookings.filter((booking) => booking.id !== bookingId)));
+            if (typeof window.deleteBookingFromFirebase === 'function') await window.deleteBookingFromFirebase(bookingId);
+            window.renderBookingRecords();
+        };
+
+        window.clearBookingRecords = async () => {
+            const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
+            if (!bookings.length || !window.confirm('هل تريد مسح جميع حجوزات المواعيد؟')) return;
+            localStorage.removeItem('safwa_booking_records');
+            if (typeof window.deleteAllBookingsFromFirebase === 'function') await window.deleteAllBookingsFromFirebase(bookings);
+            window.renderBookingRecords();
         };
 
         window.handleComplaintSubmit = (e) => {
@@ -2518,6 +2596,34 @@
         let db, auth, currentUser = null, isFirebaseActive = false;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'baqawi-center-app';
 
+        window.saveBookingToFirebase = async (booking) => {
+            try {
+                if (!db) await initFirebase();
+                if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bookings', booking.id), booking);
+            } catch (error) {
+                console.error('Failed to save booking to Firestore:', error);
+            }
+        };
+
+        window.deleteBookingFromFirebase = async (bookingId) => {
+            try {
+                if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bookings', bookingId));
+            } catch (error) {
+                console.error('Failed to delete booking from Firestore:', error);
+            }
+        };
+
+        window.deleteAllBookingsFromFirebase = async (bookings) => {
+            try {
+                if (!db) return;
+                const batch = writeBatch(db);
+                bookings.forEach((booking) => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'bookings', booking.id)));
+                await batch.commit();
+            } catch (error) {
+                console.error('Failed to clear bookings from Firestore:', error);
+            }
+        };
+
         window.loadCarsFromFirebase = async () => {
             if (!db) {
                 await initFirebase();
@@ -2696,7 +2802,7 @@
         window.closeActivityLogModal = () => document.getElementById('activityLogModal').classList.add('hidden');
 
         // Realtime Listeners
-        let unsubCars = null, unsubDelivered = null, unsubHistory = null, unsubActivity = null, unsubEmployees = null, unsubAssignments = null, unsubWorkersDirectory = null;
+        let unsubCars = null, unsubDelivered = null, unsubHistory = null, unsubActivity = null, unsubEmployees = null, unsubAssignments = null, unsubWorkersDirectory = null, unsubBookings = null;
         let activityLogCache = [];
         let workersLogIndexCache = [];
 
@@ -2756,6 +2862,7 @@
             if(unsubEmployees) unsubEmployees();
             if(unsubAssignments) unsubAssignments();
             if(unsubWorkersDirectory) unsubWorkersDirectory();
+            if(unsubBookings) unsubBookings();
 
             unsubCars = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'cars'), (snap) => {
                 let list = []; snap.forEach(doc => {
@@ -2845,6 +2952,19 @@
                 window.renderWorkersLog();
             }, (error) => {
                 console.error("Firestore Workers Directory listener error:", error);
+            });
+
+            unsubBookings = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bookings'), (snap) => {
+                const list = [];
+                snap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    if (data && docSnap.id) list.push({ id: docSnap.id, ...data });
+                });
+                list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                localStorage.setItem('safwa_booking_records', JSON.stringify(list));
+                window.renderBookingRecords();
+            }, (error) => {
+                console.error("Firestore Bookings listener error:", error);
             });
 
             if (currentUserRole === 'admin') {
@@ -4828,17 +4948,19 @@
             }
             const msgMod = document.getElementById('messagingModule');
             const carsMod = document.getElementById('carsModule');
+            const bookingsMod = document.getElementById('bookingsModule');
             const empMod = document.getElementById('employeesModule');
             if(msgMod) msgMod.classList.toggle('hidden', t !== 'messaging');
             if(carsMod) carsMod.classList.toggle('hidden', t !== 'cars');
+            if(bookingsMod) bookingsMod.classList.toggle('hidden', t !== 'bookings');
             if(empMod) empMod.classList.toggle('hidden', t !== 'employees');
 
-            const tabIds = ['appTab-messaging', 'appTab-cars', 'appTab-employees'];
+            const tabIds = ['appTab-messaging', 'appTab-cars', 'appTab-bookings', 'appTab-employees'];
             tabIds.forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) {
                     if (id === `appTab-${t}`) {
-                        const borderClr = t === 'cars' ? 'border-emerald-500' : (t === 'employees' ? 'border-sky-500' : 'border-safwa-gold');
+                        const borderClr = t === 'cars' ? 'border-emerald-500' : (t === 'bookings' ? 'border-secondary' : (t === 'employees' ? 'border-sky-500' : 'border-safwa-gold'));
                         btn.className = `flex-grow max-w-[200px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-[#1b263b] dark:text-white shadow-md border-b-2 ${borderClr}`;
                     } else {
                         btn.className = "flex-grow max-w-[200px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 text-gray-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all";
@@ -4852,6 +4974,7 @@
                 window.renderDeliveredCars();
                 window.renderWorkersLog();
             }
+            if (t === 'bookings') window.renderBookingRecords();
         };
 
         window.toggleDarkMode = () => {
