@@ -2159,24 +2159,37 @@
             const digits = String(value ?? '').replace(/\D/g, '');
             if (!digits) return '';
 
-            if (digits.startsWith('00')) return digits.slice(2);
-            if (digits.startsWith('+')) return digits.slice(1);
-            if (digits.startsWith(defaultCountryCode)) return digits;
-            if (digits.length === 10 && digits.startsWith('0')) return `${defaultCountryCode}${digits.slice(1)}`;
-            if (digits.length === 9) return `${defaultCountryCode}${digits}`;
-            return digits;
+            const cleaned = digits.replace(/^00/, '').replace(/^\+/, '');
+            if (cleaned.startsWith(defaultCountryCode)) return cleaned;
+            if (cleaned.length === 10 && cleaned.startsWith('0')) return `${defaultCountryCode}${cleaned.slice(1)}`;
+            if (cleaned.length === 9) return `${defaultCountryCode}${cleaned}`;
+            return cleaned;
+        };
+
+        const sanitizeStoredBookings = () => {
+            const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
+            const sanitized = bookings.map((booking) => {
+                if (!booking || !booking.phone) return booking;
+                const normalized = normalizeWhatsappPhone(booking.phone);
+                return normalized ? { ...booking, phone: normalized } : booking;
+            });
+            if (JSON.stringify(bookings) !== JSON.stringify(sanitized)) {
+                localStorage.setItem('safwa_booking_records', JSON.stringify(sanitized));
+            }
+            return sanitized;
         };
 
         window.handleBookingSubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('bookName').value.trim();
             const phone = document.getElementById('bookPhone').value.trim();
+            const normalizedPhone = normalizeWhatsappPhone(phone) || phone;
             const car = document.getElementById('bookCar').value.trim();
             const service = document.getElementById('bookService').value;
             const date = document.getElementById('bookDate').value;
             const time = document.getElementById('bookTime').value;
 
-            const booking = { id: 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), name, phone, car, services: service, date, time, createdAt: new Date().toISOString() };
+            const booking = { id: 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), name, phone: normalizedPhone, car, services: service, date, time, createdAt: new Date().toISOString() };
             const message = `*طلب حجز موعد صيانة جديد - مركز البقعاوي*\n\n👤 *العميل:* ${name}\n📞 *الجوال:* ${phone}\n🚗 *السيارة:* ${car}\n🛠 *الخدمة:* ${service}\n📅 *التاريخ:* ${date}\n⏰ *الوقت:* ${time}`;
             const whatsappUrl = `https://api.whatsapp.com/send?phone=966564543036&text=${encodeURIComponent(message)}`;
             const whatsappPopup = window.open(whatsappUrl, '_blank', 'noopener');
@@ -2206,7 +2219,7 @@
             const emptyMessage = document.getElementById('noBookingsMsg');
             const totalBadge = document.getElementById('bookingsTotalBadge');
             if (!tableBody) return;
-            const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
+            const bookings = sanitizeStoredBookings();
             const query = (document.getElementById('bookingSearchInput')?.value || '').trim().toLowerCase();
             const filteredBookings = bookings.filter((booking) => [booking.name, booking.phone, booking.car, booking.services || booking.service, booking.date, booking.time].some((value) => String(value || '').toLowerCase().includes(query)));
             if (totalBadge) totalBadge.textContent = `إجمالي: ${bookings.length}`;
