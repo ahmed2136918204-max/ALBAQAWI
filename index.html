@@ -2145,6 +2145,16 @@
             window.loadPublicVehicleData?.().catch(() => {});
         });
 
+        const openWhatsAppChat = (phone, message) => {
+            const phoneNumber = String(phone || '').replace(/\D/g, '');
+            const url = `https://api.whatsapp.com/send?phone=${encodeURIComponent(phoneNumber)}&text=${encodeURIComponent(message || '')}`;
+            const popup = window.open(url, '_blank', 'noopener');
+            if (!popup) {
+                window.location.href = url;
+            }
+            return popup;
+        };
+
         window.handleBookingSubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('bookName').value.trim();
@@ -2155,6 +2165,13 @@
             const time = document.getElementById('bookTime').value;
 
             const booking = { id: 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), name, phone, car, services: service, date, time, createdAt: new Date().toISOString() };
+            const message = `*طلب حجز موعد صيانة جديد - مركز البقعاوي*\n\n👤 *العميل:* ${name}\n📞 *الجوال:* ${phone}\n🚗 *السيارة:* ${car}\n🛠 *الخدمة:* ${service}\n📅 *التاريخ:* ${date}\n⏰ *الوقت:* ${time}`;
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=966564543036&text=${encodeURIComponent(message)}`;
+            const whatsappPopup = window.open(whatsappUrl, '_blank', 'noopener');
+            if (!whatsappPopup) {
+                window.location.href = whatsappUrl;
+            }
+
             const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
             bookings.unshift(booking);
             localStorage.setItem('safwa_booking_records', JSON.stringify(bookings));
@@ -2163,12 +2180,9 @@
                 : false;
             if (!savedToFirebase) {
                 localStorage.setItem('safwa_booking_records', JSON.stringify(bookings.filter((item) => item.id !== booking.id)));
-                showToast('تعذر حفظ الحجز في قاعدة البيانات. لم يتم فتح واتساب، راجع قواعد Firestore.', 'error');
-                return;
+                showToast('تم فتح واتساب، لكن لم يتم حفظ الحجز في قاعدة البيانات. تحقق من إعدادات Firestore.', 'error');
             }
 
-            const message = `*طلب حجز موعد صيانة جديد - مركز البقعاوي*\n\n👤 *العميل:* ${name}\n📞 *الجوال:* ${phone}\n🚗 *السيارة:* ${car}\n🛠 *الخدمة:* ${service}\n📅 *التاريخ:* ${date}\n⏰ *الوقت:* ${time}`;
-            window.open(`https://api.whatsapp.com/send?phone=966564543036&text=${encodeURIComponent(message)}`, '_blank');
             e.target.reset();
             if (typeof window.renderBookingRecords === 'function') window.renderBookingRecords();
         };
@@ -3272,6 +3286,11 @@
             const phone = document.getElementById('phoneNumber').value.trim(); if(!phone || !validatePhoneNumberLive()) return showToast('رقم الجوال غير صحيح!', 'error');
             const code = document.getElementById('countryCode').value; let cp = phone.replace(/\D/g,'').replace(/^0+/,''); if(!cp.startsWith(code)) cp = code+cp;
             const msg = generateMessage();
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${cp}&text=${encodeURIComponent(msg)}`;
+            const whatsappPopup = window.open(whatsappUrl, '_blank', 'noopener');
+            if (!whatsappPopup) {
+                window.location.href = whatsappUrl;
+            }
 
             if (activeTab === 'ready') {
                 const plateFromForm = normalizeMessagingPlate(getFormattedPlate());
@@ -3291,7 +3310,6 @@
                 await setDoc(doc(db,'artifacts',appId,'public','data','history','log_'+Date.now()), { customerName: document.getElementById('customerName').value||'عميل', phone: cp, action: activeTab, carModel: document.getElementById('carModel').value, plate: getFormattedPlate(), message: msg, by: currentUser.email.split('@')[0], timestamp: new Date().toISOString() });
                 logActivity('إرسال واتساب', `تم إرسال إشعار (${activeTab}) للعميل - لوحة: ${messagePlate}`);
             }
-            window.open(`https://api.whatsapp.com/send?phone=${cp}&text=${encodeURIComponent(msg)}`, '_blank');
         }
         window.sendToWhatsApp = sendToWhatsApp;
 
