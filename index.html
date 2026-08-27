@@ -2155,6 +2155,18 @@
             return popup;
         };
 
+        const normalizeWhatsappPhone = (value, defaultCountryCode = '966') => {
+            const digits = String(value ?? '').replace(/\D/g, '');
+            if (!digits) return '';
+
+            if (digits.startsWith('00')) return digits.slice(2);
+            if (digits.startsWith('+')) return digits.slice(1);
+            if (digits.startsWith(defaultCountryCode)) return digits;
+            if (digits.length === 10 && digits.startsWith('0')) return `${defaultCountryCode}${digits.slice(1)}`;
+            if (digits.length === 9) return `${defaultCountryCode}${digits}`;
+            return digits;
+        };
+
         window.handleBookingSubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('bookName').value.trim();
@@ -2202,7 +2214,9 @@
                 const createdAt = booking.createdAt ? new Date(booking.createdAt).toLocaleString('ar-SA') : 'غير محدد';
                 const bookingServices = booking.services || booking.service || '';
                 const whatsappMessage = `*متابعة حجز موعد - مركز البقعاوي*\n\n👤 *العميل:* ${booking.name}\n🚗 *السيارة:* ${booking.car}\n🛠 *الخدمة:* ${bookingServices}\n📅 *التاريخ:* ${booking.date}\n⏰ *الوقت:* ${booking.time}`;
-                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60"><td class="p-3 font-bold">${escapeBookingHtml(booking.name)}</td><td class="p-3 font-mono" dir="ltr">${escapeBookingHtml(booking.phone)}</td><td class="p-3">${escapeBookingHtml(booking.car)}</td><td class="p-3">${escapeBookingHtml(bookingServices)}</td><td class="p-3 whitespace-nowrap">${escapeBookingHtml(booking.date)}<br><span class="text-gray-500">${escapeBookingHtml(booking.time)}</span></td><td class="p-3 text-gray-500 whitespace-nowrap">${escapeBookingHtml(createdAt)}</td><td class="p-3"><div class="flex justify-center gap-2"><a href="https://api.whatsapp.com/send?phone=${encodeURIComponent(booking.phone.replace(/\D/g, ''))}&text=${encodeURIComponent(whatsappMessage)}" target="_blank" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2.5 py-1.5 rounded-lg font-bold" title="فتح واتساب"><i class="fab fa-whatsapp"></i></a><button onclick="window.deleteBookingRecord('${booking.id}')" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1.5 rounded-lg" title="حذف الحجز"><i class="fa-solid fa-trash-can"></i></button></div></td></tr>`;
+                const whatsappPhone = normalizeWhatsappPhone(booking.phone);
+                const whatsappHref = whatsappPhone ? `https://api.whatsapp.com/send?phone=${encodeURIComponent(whatsappPhone)}&text=${encodeURIComponent(whatsappMessage)}` : '#';
+                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60"><td class="p-3 font-bold">${escapeBookingHtml(booking.name)}</td><td class="p-3 font-mono" dir="ltr">${escapeBookingHtml(booking.phone)}</td><td class="p-3">${escapeBookingHtml(booking.car)}</td><td class="p-3">${escapeBookingHtml(bookingServices)}</td><td class="p-3 whitespace-nowrap">${escapeBookingHtml(booking.date)}<br><span class="text-gray-500">${escapeBookingHtml(booking.time)}</span></td><td class="p-3 text-gray-500 whitespace-nowrap">${escapeBookingHtml(createdAt)}</td><td class="p-3"><div class="flex justify-center gap-2"><a href="${whatsappHref}" target="_blank" rel="noopener noreferrer" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2.5 py-1.5 rounded-lg font-bold" title="فتح واتساب" aria-label="فتح واتساب"><i class="fab fa-whatsapp"></i></a><button onclick="window.deleteBookingRecord('${booking.id}')" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1.5 rounded-lg" title="حذف الحجز"><i class="fa-solid fa-trash-can"></i></button></div></td></tr>`;
             }).join('');
             emptyMessage?.classList.toggle('hidden', filteredBookings.length > 0);
         };
