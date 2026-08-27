@@ -2154,11 +2154,18 @@
             const date = document.getElementById('bookDate').value;
             const time = document.getElementById('bookTime').value;
 
-            const booking = { id: 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), name, phone, car, service, date, time, createdAt: new Date().toISOString() };
+            const booking = { id: 'booking_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), name, phone, car, services: service, date, time, createdAt: new Date().toISOString() };
             const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
             bookings.unshift(booking);
             localStorage.setItem('safwa_booking_records', JSON.stringify(bookings));
-            if (typeof window.saveBookingToFirebase === 'function') await window.saveBookingToFirebase(booking);
+            const savedToFirebase = typeof window.saveBookingToFirebase === 'function'
+                ? await window.saveBookingToFirebase(booking)
+                : false;
+            if (!savedToFirebase) {
+                localStorage.setItem('safwa_booking_records', JSON.stringify(bookings.filter((item) => item.id !== booking.id)));
+                showToast('تعذر حفظ الحجز في قاعدة البيانات. لم يتم فتح واتساب، راجع قواعد Firestore.', 'error');
+                return;
+            }
 
             const message = `*طلب حجز موعد صيانة جديد - مركز البقعاوي*\n\n👤 *العميل:* ${name}\n📞 *الجوال:* ${phone}\n🚗 *السيارة:* ${car}\n🛠 *الخدمة:* ${service}\n📅 *التاريخ:* ${date}\n⏰ *الوقت:* ${time}`;
             window.open(`https://api.whatsapp.com/send?phone=966564543036&text=${encodeURIComponent(message)}`, '_blank');
@@ -2175,12 +2182,13 @@
             if (!tableBody) return;
             const bookings = JSON.parse(localStorage.getItem('safwa_booking_records') || '[]');
             const query = (document.getElementById('bookingSearchInput')?.value || '').trim().toLowerCase();
-            const filteredBookings = bookings.filter((booking) => [booking.name, booking.phone, booking.car, booking.services, booking.date, booking.time].some((value) => String(value || '').toLowerCase().includes(query)));
+            const filteredBookings = bookings.filter((booking) => [booking.name, booking.phone, booking.car, booking.services || booking.service, booking.date, booking.time].some((value) => String(value || '').toLowerCase().includes(query)));
             if (totalBadge) totalBadge.textContent = `إجمالي: ${bookings.length}`;
             tableBody.innerHTML = filteredBookings.map((booking) => {
                 const createdAt = booking.createdAt ? new Date(booking.createdAt).toLocaleString('ar-SA') : 'غير محدد';
-                const whatsappMessage = `*متابعة حجز موعد - مركز البقعاوي*\n\n👤 *العميل:* ${booking.name}\n🚗 *السيارة:* ${booking.car}\n🛠 *الخدمة:* ${booking.services}\n📅 *التاريخ:* ${booking.date}\n⏰ *الوقت:* ${booking.time}`;
-                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60"><td class="p-3 font-bold">${escapeBookingHtml(booking.name)}</td><td class="p-3 font-mono" dir="ltr">${escapeBookingHtml(booking.phone)}</td><td class="p-3">${escapeBookingHtml(booking.car)}</td><td class="p-3">${escapeBookingHtml(booking.services)}</td><td class="p-3 whitespace-nowrap">${escapeBookingHtml(booking.date)}<br><span class="text-gray-500">${escapeBookingHtml(booking.time)}</span></td><td class="p-3 text-gray-500 whitespace-nowrap">${escapeBookingHtml(createdAt)}</td><td class="p-3"><div class="flex justify-center gap-2"><a href="https://api.whatsapp.com/send?phone=${encodeURIComponent(booking.phone.replace(/\D/g, ''))}&text=${encodeURIComponent(whatsappMessage)}" target="_blank" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2.5 py-1.5 rounded-lg font-bold" title="فتح واتساب"><i class="fab fa-whatsapp"></i></a><button onclick="window.deleteBookingRecord('${booking.id}')" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1.5 rounded-lg" title="حذف الحجز"><i class="fa-solid fa-trash-can"></i></button></div></td></tr>`;
+                const bookingServices = booking.services || booking.service || '';
+                const whatsappMessage = `*متابعة حجز موعد - مركز البقعاوي*\n\n👤 *العميل:* ${booking.name}\n🚗 *السيارة:* ${booking.car}\n🛠 *الخدمة:* ${bookingServices}\n📅 *التاريخ:* ${booking.date}\n⏰ *الوقت:* ${booking.time}`;
+                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60"><td class="p-3 font-bold">${escapeBookingHtml(booking.name)}</td><td class="p-3 font-mono" dir="ltr">${escapeBookingHtml(booking.phone)}</td><td class="p-3">${escapeBookingHtml(booking.car)}</td><td class="p-3">${escapeBookingHtml(bookingServices)}</td><td class="p-3 whitespace-nowrap">${escapeBookingHtml(booking.date)}<br><span class="text-gray-500">${escapeBookingHtml(booking.time)}</span></td><td class="p-3 text-gray-500 whitespace-nowrap">${escapeBookingHtml(createdAt)}</td><td class="p-3"><div class="flex justify-center gap-2"><a href="https://api.whatsapp.com/send?phone=${encodeURIComponent(booking.phone.replace(/\D/g, ''))}&text=${encodeURIComponent(whatsappMessage)}" target="_blank" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2.5 py-1.5 rounded-lg font-bold" title="فتح واتساب"><i class="fab fa-whatsapp"></i></a><button onclick="window.deleteBookingRecord('${booking.id}')" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1.5 rounded-lg" title="حذف الحجز"><i class="fa-solid fa-trash-can"></i></button></div></td></tr>`;
             }).join('');
             emptyMessage?.classList.toggle('hidden', filteredBookings.length > 0);
         };
@@ -2594,14 +2602,34 @@
         };
         
         let db, auth, currentUser = null, isFirebaseActive = false;
+        let firebaseInitPromise = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'baqawi-center-app';
 
         window.saveBookingToFirebase = async (booking) => {
             try {
                 if (!db) await initFirebase();
-                if (db) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bookings', booking.id), booking);
+                if (!db) return false;
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bookings', booking.id), booking);
+                return true;
             } catch (error) {
                 console.error('Failed to save booking to Firestore:', error);
+                return false;
+            }
+        };
+
+        window.loadBookingRecordsFromFirebase = async () => {
+            try {
+                if (!db) await initFirebase();
+                if (!db || !currentUser) return;
+                const snapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'bookings'));
+                const list = [];
+                snapshot.forEach((docSnap) => list.push({ id: docSnap.id, ...docSnap.data() }));
+                list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                localStorage.setItem('safwa_booking_records', JSON.stringify(list));
+                window.renderBookingRecords();
+            } catch (error) {
+                console.error('Failed to load bookings from Firestore:', error);
+                showToast('تعذر تحميل الحجوزات. راجع صلاحيات Firestore لمجموعة bookings.', 'error');
             }
         };
 
@@ -2653,10 +2681,16 @@
 
         async function initFirebase() {
             if (!myFirebaseConfig) return;
+            if (db) return db;
+            if (firebaseInitPromise) return firebaseInitPromise;
+
+            let resolveFirebaseInit;
+            firebaseInitPromise = new Promise((resolve) => { resolveFirebaseInit = resolve; });
             try {
                 const app = initializeApp(myFirebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                resolveFirebaseInit(db);
 
                 onAuthStateChanged(auth, async (user) => {
                     const pubSite = document.getElementById('publicWebsite');
@@ -2750,7 +2784,9 @@
                 });
             } catch (e) {
                 console.error("Firebase Init Failed: ", e);
+                resolveFirebaseInit(null);
             }
+            return firebaseInitPromise;
         }
 
         // Auth Operations
@@ -4974,7 +5010,10 @@
                 window.renderDeliveredCars();
                 window.renderWorkersLog();
             }
-            if (t === 'bookings') window.renderBookingRecords();
+            if (t === 'bookings') {
+                window.renderBookingRecords();
+                window.loadBookingRecordsFromFirebase();
+            }
         };
 
         window.toggleDarkMode = () => {
